@@ -1,0 +1,30 @@
+{% extends 'main/base.html' %}
+{% block content  %}
+{% if error %}
+<h2>ERROR: {{error}}</h2>
+{% endif %}
+
+<form method="post">{% csrf_token %}
+    <h2>User to send money: {{user_to}}</h2>
+<h3>Choose one balance to send money to:</h3>
+{% for balance in balances_to %}
+    <p><li>
+        <input type="radio" name="balance_to" value="{{ balance.pk }}" />
+        <label>{{balance.name}} : {{balance.sum}}$</label>
+    </li></p>
+
+
+{% endfor %}
+<h3>Choose one or many balances to send money from:</h3>
+{% for balance in balances_from %}
+    <p><li>
+        <input type="checkbox" name="balances_from" value="{{ balance.pk }}" />
+        <label>{{balance.name}} : {{balance.sum}}$</label>
+
+    </li></p>
+{% endfor %}
+<h3>Input sum to send to user:</h3>
+    {{form.as_p}}
+    <p><input type="submit" value="Transact"></p>
+</form>
+{% endblock %}

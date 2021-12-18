@@ -6,12 +6,21 @@
 </head>
 <body>
 {% if current_user %}
-{{current_user}}
-<p><a href="{% url 'logout' %}">Log Out</a></p>
+    {{current_user}}
+<p></p>
+    <li><a href="{% url 'logout' %}">Log Out</a></li>
 {%else%}
-<p><a href="{% url 'login' %}">Log In</a></p>
+    <li><a href="{% url 'register' %}">Register</a></li>
+    <li><a href="{% url 'login' %}">Log In</a></li>
 {% endif%}
+{% block content %}
+    <p><a href="{% url 'user_list' %}">User List</a></p>
+    <h2>Balances</h2>
+    {%for balance in balances%}
+        <li>{{balance.name}}: {{balance.sum}}$</li>
+    {%endfor%}
 
-<p><a href="{% url 'register' %}">Register</a></p>
+<h3><a href="{% url 'transaction_list' %}">Watch transactions</a></h3>
+{% endblock %}
 </body>
 </html>

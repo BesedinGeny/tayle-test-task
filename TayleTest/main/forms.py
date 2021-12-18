@@ -3,8 +3,13 @@ from django.contrib.auth.forms import forms
 from django.contrib.auth.models import User
 
 
+class MakeTransaction(forms.Form):
+    """остальные поля many-to-many и балансы созданы внутри шаблона"""
+    sum = forms.FloatField()
+
 class RegistrationForm(UserCreationForm, forms.ModelForm):
     """форма регистрации, при необходимости можно гибко добавлять поля к регистрации"""
+
     class Meta:
         model = User
         fields = ('username', 'email', 'password1', 'password2')
@@ -18,4 +23,5 @@ class LoginForm(forms.Form):
     class Meta:
         model = User
         fields = ('username', 'password')
+
 
