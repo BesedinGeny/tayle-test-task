@@ -28,3 +28,8 @@ class Transaction(models.Model):
     balances_from = models.ManyToManyField(Balance, blank=False,
                                            related_name='%(class)s_balances_from')  # счета списания
     sum = models.FloatField(validators=[MinValueValidator(0)])  # денег переведено
+    # наверное не хватает поля для времени транзакции
+
+    def __str__(self):
+        return "to " + self.balance_to.name + "(" + self.balance_to.user.username + ") " + \
+               "from " + self.balances_from.first().user.username + ", sum: " + str(self.sum)

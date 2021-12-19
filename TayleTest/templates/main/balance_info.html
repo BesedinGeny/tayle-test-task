@@ -1,0 +1,13 @@
+{% extends 'main/base.html' %}
+{% block content  %}
+<h2>{{balance.name}}</h2>
+<h3>Income</h3>
+{% for transaction in income %}
+    {{transaction}}
+{% endfor %}
+
+<h3>Expense</h3>
+{% for transaction in expense %}
+    {{transaction}}
+{% endfor %}
+{% endblock %}

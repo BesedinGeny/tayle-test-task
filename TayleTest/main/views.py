@@ -1,3 +1,5 @@
+from itertools import islice, chain
+
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -34,21 +36,23 @@ def make_transaction(request, respond_to):
         if form.is_valid():
             # TODO: хорошо бы вынести логику в controller -_-
             post_data = dict(request.POST)
+            if post_data['sum'][0] < 0:  # валидация на положительное число
+                context['error'] = 'Sum must has positive value'
+                return render(request, 'main/transaction.html', context=context)
             # создаем транзакцию, если все данные указаны верно
             balance_to_chosen = post_data.get('balance_to', None)
             balances_from_chosen = post_data.get('balances_from', None)
             sum_of_transaction = float(post_data['sum'][0])
-            count_of_balances = len(balances_from_chosen)  # кол-во балансов
             if balance_to_chosen is None or balances_from_chosen is None:  # дополнительная валидация
                 context['error'] = 'Need to choose one balance to send money to'
             else:  # транзакция корректна, проверяем балансы на наличие достаточного кол-ва денег
+                count_of_balances = len(balances_from_chosen)
                 for pk in balances_from_chosen:
                     balance = Balance.objects.get(pk=pk)
                     if balance.sum < sum_of_transaction / count_of_balances:
                         context['error'] = 'Balance "' + balance.name + '" has not enough money'
                         break
                 # везде хватает денег, тогда производим изменение балансов
-
                 balances = []
                 for pk in balances_from_chosen:
                     balance = Balance.objects.get(pk=pk)
@@ -67,7 +71,7 @@ def make_transaction(request, respond_to):
                 transaction.save()
                 return redirect('base')
 
-            if context.get('error', None) is None:  # валидация не пройдена
+            if context.get('error', None) is not None:  # валидация не пройдена
                 context['form'] = form
         else:
             context['form'] = form
@@ -75,6 +79,18 @@ def make_transaction(request, respond_to):
         context['form'] = MakeTransaction()
 
     return render(request, 'main/transaction.html', context=context)
+
+
+@login_required()
+def balance_info(request, balance_pk):
+    context = {'current_user': request.user.username}
+    balance = get_object_or_404(Balance, pk=balance_pk)  # ??
+    transactions_to = Transaction.objects.filter(balance_to__pk=balance_pk)  # зачисления
+    transactions_from = Transaction.objects.filter(balances_from__pk=balance_pk)  # списание
+    print(transactions_from)
+    context['income'] = transactions_to
+    context['expense'] = transactions_from
+    return render(request, 'main/balance_info.html', context=context)
 
 
 class TransactionList(ListView):
@@ -85,14 +101,13 @@ class TransactionList(ListView):
     template_name = 'main/transaction_for_user.html'
 
     def get_queryset(self):
-        filter_val = self.request.GET.get('filter', "")
+        filter_val = self.request.GET.get('filter', None)
         user = self.request.user.username
-        new_context = Transaction.objects.filter(balance_to__user__username=user)  # только данные пользователя
-        # TODO: filters
-        """new_context = new_context.filter(
-            balance_to=filter_val,
-        ).order_by(order)"""
-        print(new_context)
+        transactions_to = Transaction.objects.filter(balance_to__user__username=user)  # только данные пользователя
+        if filter_val is not None:  # если в филтр что-то передали
+            transactions_to = transactions_to.filter(balance_to__user__username=filter_val)
+        transactions_from = Transaction.objects.filter(balances_from__user__username=user).distinct()  #
+        new_context = transactions_to.union(transactions_from)
         return new_context
 
     def get_context_data(self, **kwargs):

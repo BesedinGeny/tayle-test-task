@@ -17,7 +17,7 @@
     <p><a href="{% url 'user_list' %}">User List</a></p>
     <h2>Balances</h2>
     {%for balance in balances%}
-        <li>{{balance.name}}: {{balance.sum}}$</li>
+        <li><a href="{% url 'balance_info' balance_pk=balance.pk %}">{{balance.name}}: {{balance.sum}}$</a></li>
     {%endfor%}
 
 <h3><a href="{% url 'transaction_list' %}">Watch transactions</a></h3>

@@ -3,17 +3,12 @@
 <h1>Transactions</h1>
 <ul>
     <form method="get" action="{% url 'transaction_list' %}">
-    <p>Filter: <input type="text" value="" name="filter"/></p>
+    <p>Filter user: sent to: <input type="text" value="" name="filter"/></p>
     <p><input type="submit" name="submit" value="submit"/></p>
 </form>
 {% for transaction in object_list %}
-    <p>to {{transaction.balance_to.user.username}}({{transaction.balance_to.name}}) from {{current_user}}
-        (
-        {% for balance in transaction.balances_from.all%}
-        {{balance.name}}
-        {% endfor %}
-        )
-        , sum: {{transaction.sum}}</p>
+    <p>{{transaction}}</p>
+
 {% empty %}
     <li>No Transactions yet.</li>
 {% endfor %}
